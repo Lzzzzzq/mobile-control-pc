@@ -7,9 +7,7 @@ const http = require('http')
 const fs = require('fs')
 const path = require('path')
 const static = require('koa-static')
-const win32 = require('win32ole')
-const shell = win32ole.client.Dispatch('WScript.Shell')
-// const objShell = new ActiveXObject("WScript.Shell")
+const robot = require("robotjs")
 
 
 const exec = require('child_process').exec
@@ -30,11 +28,12 @@ const io = new Server(server)
 io.on('connection', function (socket) {
     console.log('new connect')
 
-    socket.on('key', function (data) {
-      shell.run('chrome')
-      console.log(data)
-      exec(`${cmdStr} ${data}`, function(err,stdout,stderr){
-        if(err) console.error(err)
-      })
+    socket.on('keydown', function (data) {
+      console.log(data, 'down')
+      robot.keyToggle(data, 'down')
+    })
+    socket.on('keyup', function (data) {
+      console.log(data, 'up')
+      robot.keyToggle(data, 'up')
     })
 })
