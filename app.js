@@ -69,7 +69,7 @@ portfinder.getPort(function(err, port) {
       } else if (type === 'player') {
         console.log('new player')
         pList[id] = socket
-        callAdmin('newPlayer', id)
+        callAdmin(pList)
       }
     } else {
       let type = aList[id] ? 'admin' : 'player'
@@ -92,17 +92,20 @@ portfinder.getPort(function(err, port) {
         delete aList[id]
       } else if (type === 'player') {
         delete pList[id]
-        callAdmin('delPlayer', id)
+        callAdmin(pList)
       }
 
       console.log('user disconnected')
     })
   })
 
-  function callAdmin (type, msg) {
+  function callAdmin (list) {
+    let allList = []
+    for (let item in list) {
+      allList.push(item)
+    }
     for (let item in aList) {
-      console.log(item)
-      aList[item].emit(type, msg)
+      aList[item].emit('playerChange', allList)
     }
   }
 })

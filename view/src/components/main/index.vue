@@ -2,15 +2,16 @@
   <div class="mainWrap">
     <img src="/qrcode">
     <div class="msgWrap">
-      <div v-for="(item, index) in msg" :key="index">
-        <span
-          :style="{
-            'color': item.color
-          }"
-        >
-          {{item.msg}}
-        </span>
-      </div>
+      <table>
+        <tr>
+          <td>序号</td>
+          <td>ID</td>
+        </tr>
+        <tr v-for="(item, index) in list" :key="item">
+          <td>{{index + 1}}</td>
+          <td>{{item}}</td>
+        </tr>
+      </table>
     </div>
   </div>
 </template>
@@ -21,7 +22,8 @@ export default {
   name: 'Main',
   data () {
     return {
-      msg: []
+      msg: [],
+      list: []
     }
   },
   mounted: function () {
@@ -31,24 +33,14 @@ export default {
   },
   methods: {
     listener: function () {
-      socket.on('newPlayer', (id) => {
-        this.msg.push({
-          msg: `用户 ${id} 加入了`,
-          color: 'green'
-        })
-      })
-
-      socket.on('delPlayer', (id) => {
-        this.msg.push({
-          msg: `用户 ${id} 离开了`,
-          color: 'red'
-        })
+      socket.on('playerChange', (list) => {
+        this.list = list
       })
     }
   }
 }
 </script>
 
-<style>
-
+<style lang='less'>
+@import './index.less';
 </style>
