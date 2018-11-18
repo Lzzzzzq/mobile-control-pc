@@ -19,4 +19,11 @@ export default {
   text-align: center;
   color: #2c3e50;
 }
+* {
+  user-seletct: none;
+  -webkit-user-seletct: none;
+  -moz-user-seletct: none;
+  -ms-user-seletct: none;
+  -webkit-tap-highlight-color:rgba(255,255,255,0);
+}
 </style>

@@ -28,7 +28,7 @@ export default {
   },
   mounted: function () {
     // eslint-disable-next-line
-    socket = io('http://192.168.31.203:3000/?type=admin')
+    socket = io('http://192.168.1.102:3000/?type=admin')
     this.listener()
   },
   methods: {
