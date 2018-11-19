@@ -193,7 +193,6 @@ export default {
         y: 50
       })
       this.selectIndex = -1
-      this.newBtnKey = keyList[0]
       this.popupVisible = false
     },
 

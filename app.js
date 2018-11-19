@@ -9,7 +9,7 @@ const robot = require('robotjs')
 const qr = require('qr-image')
 const os = require('os')
 const portfinder = require('portfinder')
-const interfaces = os.networkInterfaces()
+const ifaces = os.networkInterfaces()
 
 const app = new Koa()
 const router = new Router()
@@ -21,19 +21,13 @@ let port = 3000
 const staticPath = './view/dist'
 
 // 获取内网ip地址
-for (var devName in interfaces) {
-  var iface = interfaces[devName]
-  for (var i = 0; i < iface.length; i++) {
-    var alias = iface[i]
-    if (
-      alias.family === 'IPv4' &&
-      alias.address !== '127.0.0.1' &&
-      !alias.internal
-    ) {
-      ip = alias.address
+Object.keys(ifaces).forEach(function (dev) {
+  ifaces[dev].forEach(function (details) {
+    if (details.family === 'IPv4') {
+      ip = details.address
     }
-  }
-}
+  });
+})
 
 // 获取可使用的端口号
 portfinder.basePort = port
@@ -56,6 +50,7 @@ portfinder.getPort(function(err, port) {
   app.use(static(path.join(__dirname, staticPath)))
 
   const server = http.createServer(app.callback()).listen(port)
+  console.log('Please open http://localhost:' + port + ' to get the control qrcode')
   const io = new Server(server)
 
   let aList = {}
@@ -67,10 +62,10 @@ portfinder.getPort(function(err, port) {
     if (!aList[id] && !pList[id]) {
       let { type } = socket.handshake.query
       if (type === 'admin') {
-        console.log('new admin')
+        // console.log('new admin')
         aList[id] = socket
       } else if (type === 'player') {
-        console.log('new player')
+        // console.log('new player')
         pList[id] = socket
         callAdmin(pList)
       }
@@ -79,11 +74,11 @@ portfinder.getPort(function(err, port) {
 
     if (type === 'player') {
       socket.on('keydown', function(data) {
-        console.log(data, 'down')
+        // console.log(data, 'down')
         robot.keyToggle(data, 'down')
       })
       socket.on('keyup', function(data) {
-        console.log(data, 'up')
+        // console.log(data, 'up')
         robot.keyToggle(data, 'up')
       })
     }
@@ -98,7 +93,7 @@ portfinder.getPort(function(err, port) {
         callAdmin(pList)
       }
 
-      console.log('user disconnected')
+      // console.log('user disconnected')
     })
   })
 
