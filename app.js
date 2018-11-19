@@ -9,13 +9,10 @@ const robot = require('robotjs')
 const qr = require('qr-image')
 const os = require('os')
 const portfinder = require('portfinder')
-const ifaces = os.networkInterfaces()
+const interfaces = os.networkInterfaces()
 
 const app = new Koa()
 const router = new Router()
-
-const exec = require('child_process').exec
-const cmdStr = 'key.vbs'
 
 let ip = ''
 let port = 3000
@@ -24,26 +21,19 @@ let port = 3000
 const staticPath = './view/dist'
 
 // 获取内网ip地址
-for (let dev in ifaces) {
-  ifaces[dev].forEach(function(details, alias) {
-    if (dev === 'WLAN') {
-      ip = details.address
+for (var devName in interfaces) {
+  var iface = interfaces[devName]
+  for (var i = 0; i < iface.length; i++) {
+    var alias = iface[i]
+    if (
+      alias.family === 'IPv4' &&
+      alias.address !== '127.0.0.1' &&
+      !alias.internal
+    ) {
+      ip = alias.address
     }
-  })
+  }
 }
-
-// 获取页面二维码
-router.get('/qrcode', ctx => {
-  let url = `http://${ip}:${port}/#/control`
-  let img = qr.image(url, { size: 10 })
-  ctx.status = 200
-  ctx.set('Content-Type', 'image/png')
-  img.pipe(ctx.res)
-})
-
-app.use(router.routes())
-
-app.use(static(path.join(__dirname, staticPath)))
 
 // 获取可使用的端口号
 portfinder.basePort = port
@@ -51,6 +41,19 @@ portfinder.getPort(function(err, port) {
   if (err) {
     throw err
   }
+
+  // 获取页面二维码
+  router.get('/qrcode', ctx => {
+    let url = `http://${ip}:${port}/#/control`
+    let img = qr.image(url, { size: 10 })
+    ctx.status = 200
+    ctx.set('Content-Type', 'image/png')
+    img.pipe(ctx.res)
+  })
+
+  app.use(router.routes())
+
+  app.use(static(path.join(__dirname, staticPath)))
 
   const server = http.createServer(app.callback()).listen(port)
   const io = new Server(server)
@@ -60,9 +63,9 @@ portfinder.getPort(function(err, port) {
 
   io.on('connection', function(socket) {
     // console.log('user connect')
-    let {id} = socket
+    let { id } = socket
     if (!aList[id] && !pList[id]) {
-      let {type} = socket.handshake.query
+      let { type } = socket.handshake.query
       if (type === 'admin') {
         console.log('new admin')
         aList[id] = socket
@@ -71,20 +74,20 @@ portfinder.getPort(function(err, port) {
         pList[id] = socket
         callAdmin(pList)
       }
-    } else {
-      let type = aList[id] ? 'admin' : 'player'
-
-      if (type === 'player') {
-        socket.on('keydown', function(data) {
-          console.log(data, 'down')
-          robot.keyToggle(data, 'down')
-        })
-        socket.on('keyup', function(data) {
-          console.log(data, 'up')
-          robot.keyToggle(data, 'up')
-        })
-      }
     }
+    let type = aList[id] ? 'admin' : 'player'
+
+    if (type === 'player') {
+      socket.on('keydown', function(data) {
+        console.log(data, 'down')
+        robot.keyToggle(data, 'down')
+      })
+      socket.on('keyup', function(data) {
+        console.log(data, 'up')
+        robot.keyToggle(data, 'up')
+      })
+    }
+
     socket.on('disconnect', function() {
       let type = aList[id] ? 'admin' : 'player'
 
@@ -99,7 +102,7 @@ portfinder.getPort(function(err, port) {
     })
   })
 
-  function callAdmin (list) {
+  function callAdmin(list) {
     let allList = []
     for (let item in list) {
       allList.push(item)
