@@ -1,21 +1,5 @@
-# view
+# 手机遥控电脑
 
-> A Vue.js project
-
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+![controlBash.png](https://i.loli.net/2019/03/16/5c8c9bfce8bc8.png)
+![屏幕快照 2019-03-16 下午2.45.23.png](https://i.loli.net/2019/03/16/5c8c9bfc852d2.png)
+![屏幕快照 2019-03-16 下午2.46.07.png](https://i.loli.net/2019/03/16/5c8c9bfc91925.png)

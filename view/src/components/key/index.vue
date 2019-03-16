@@ -32,7 +32,6 @@
 </template>
 
 <script>
-let socket
 let keyList = [
   'q',
   'w',
@@ -66,7 +65,7 @@ let keyList = [
   'right'
 ]
 export default {
-  name: 'Con',
+  name: 'Key',
   data () {
     this.touchX = 0
     this.touchY = 0
@@ -86,8 +85,6 @@ export default {
     }
   },
   mounted: function () {
-    // eslint-disable-next-line
-    socket = io('/?type=player')
     this.listener()
   },
   methods: {
@@ -96,7 +93,7 @@ export default {
      */
     listener: function () {
       // eslint-disable-next-line
-      socket.on('welcome', () => {
+      this.$socket.on('welcome', () => {
         console.log('welcome')
       })
     },
@@ -128,7 +125,7 @@ export default {
      */
     handleKeyDown: function (key) {
       console.log('按键被按下', key)
-      socket.emit('keydown', key)
+      this.$socket.emit('keydown', key)
     },
 
     /**
@@ -136,7 +133,7 @@ export default {
      */
     handleKeyUp: function (key) {
       console.log('按键被抬起', key)
-      socket.emit('keyup', key)
+      this.$socket.emit('keyup', key)
     },
 
     /**
@@ -225,6 +222,6 @@ export default {
 }
 </script>
 
-<style lang='less'>
+<style lang='less' scoped>
 @import './index.less';
 </style>

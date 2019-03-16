@@ -4,9 +4,19 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import MintUI from 'mint-ui'
+import FastClick from 'fastclick'
 import 'mint-ui/lib/style.css'
 
 Vue.use(MintUI)
+
+if ('addEventListener' in document) {
+  document.addEventListener('DOMContentLoaded', function () {
+    FastClick.attach(document.body)
+  }, false)
+}
+
+// eslint-disable-next-line
+Vue.prototype.$socket = io()
 
 Vue.config.productionTip = false
 

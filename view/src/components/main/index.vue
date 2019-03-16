@@ -1,41 +1,28 @@
 <template>
   <div class="mainWrap">
-    <img src="/qrcode">
-    <div class="msgWrap">
-      <table>
-        <tr>
-          <td>序号</td>
-          <td>ID</td>
-        </tr>
-        <tr v-for="(item, index) in list" :key="item">
-          <td>{{index + 1}}</td>
-          <td>{{item}}</td>
-        </tr>
-      </table>
-    </div>
+    <mt-button type="primary" style="width: 100%" @click="handleToKey">键盘模式</mt-button>
+    <mt-button type="primary" style="width: 100%; margin-top: 20px;" @click="handleToMouse">鼠标模式</mt-button>
   </div>
 </template>
 
 <script>
-let socket
+
 export default {
   name: 'Main',
-  data () {
-    return {
-      msg: [],
-      list: []
-    }
-  },
   mounted: function () {
-    // eslint-disable-next-line
-    socket = io('/?type=admin')
-    this.listener()
   },
   methods: {
-    listener: function () {
-      socket.on('playerChange', (list) => {
-        this.list = list
-      })
+    /**
+     * 跳转到键盘模式
+     */
+    handleToKey: function () {
+      this.$router.push('key')
+    },
+    /**
+     * 跳转到鼠标模式
+     */
+    handleToMouse: function () {
+      this.$router.push('mouse')
     }
   }
 }

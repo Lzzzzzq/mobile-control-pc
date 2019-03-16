@@ -9,6 +9,8 @@ const robot = require('robotjs')
 const qr = require('qr-image')
 const os = require('os')
 const portfinder = require('portfinder')
+const qrcode = require('qrcode-terminal')
+const colors = require('colors')
 const ifaces = os.networkInterfaces()
 
 const app = new Koa()
@@ -21,12 +23,12 @@ let port = 3000
 const staticPath = './view/dist'
 
 // 获取内网ip地址
-Object.keys(ifaces).forEach(function (dev) {
-  ifaces[dev].forEach(function (details) {
+Object.keys(ifaces).forEach(function(dev) {
+  ifaces[dev].forEach(function(details) {
     if (details.family === 'IPv4') {
       ip = details.address
     }
-  });
+  })
 })
 
 // 获取可使用的端口号
@@ -36,9 +38,11 @@ portfinder.getPort(function(err, port) {
     throw err
   }
 
+  let url = `http://${ip}:${port}/#/main`
+  // let url = `http://${ip}:8080/#/main`
+
   // 获取页面二维码
   router.get('/qrcode', ctx => {
-    let url = `http://${ip}:${port}/#/control`
     let img = qr.image(url, { size: 10 })
     ctx.status = 200
     ctx.set('Content-Type', 'image/png')
@@ -50,60 +54,56 @@ portfinder.getPort(function(err, port) {
   app.use(static(path.join(__dirname, staticPath)))
 
   const server = http.createServer(app.callback()).listen(port)
-  console.log('Please open http://localhost:' + port + ' to get the control qrcode')
+
+  console.log('Please sweep the qrcode: ')
+  qrcode.generate(url, function(
+    qrcode
+  ) {
+    console.log(qrcode)
+    console.log(
+      'Or visit ' + 
+      colors.bgBlack.green(`http://${ip}:${port}/qrcode`)
+       + ' to get it in the browser'
+    )
+  })
   const io = new Server(server)
 
   let aList = {}
   let pList = {}
 
   io.on('connection', function(socket) {
-    // console.log('user connect')
     let { id } = socket
-    if (!aList[id] && !pList[id]) {
-      let { type } = socket.handshake.query
-      if (type === 'admin') {
-        // console.log('new admin')
-        aList[id] = socket
-      } else if (type === 'player') {
-        // console.log('new player')
-        pList[id] = socket
-        callAdmin(pList)
-      }
+    if (!pList[id]) {
+      console.log(`User ${id} connect the controller`.green)
+      pList[id] = socket
     }
-    let type = aList[id] ? 'admin' : 'player'
+    socket.emit('welcome')
 
-    if (type === 'player') {
-      socket.on('keydown', function(data) {
-        // console.log(data, 'down')
-        robot.keyToggle(data, 'down')
+    socket.on('keydown', function(data) {
+      robot.keyToggle(data, 'down')
+    })
+    socket.on('keyup', function(data) {
+      robot.keyToggle(data, 'up')
+    })
+
+    socket.on('touchstart', function () {
+      const pos = robot.getMousePos()
+
+      socket.on('changeMousePos', ({x, y}) => {
+        robot.moveMouse(pos.x + x * 1.5, pos.y + y * 1.5)
       })
-      socket.on('keyup', function(data) {
-        // console.log(data, 'up')
-        robot.keyToggle(data, 'up')
-      })
-    }
+    })
+    socket.on('touchend', function () {
+      socket.removeAllListeners('changeMousePos')
+    })
+    socket.on('mouseclick', function () {
+      robot.mouseClick()
+    })
 
     socket.on('disconnect', function() {
-      let type = aList[id] ? 'admin' : 'player'
-
-      if (type === 'admin') {
-        delete aList[id]
-      } else if (type === 'player') {
-        delete pList[id]
-        callAdmin(pList)
-      }
-
-      // console.log('user disconnected')
+      console.log(`User ${id} disconnect the controller`.yellow)
+      delete pList[id]
     })
   })
-
-  function callAdmin(list) {
-    let allList = []
-    for (let item in list) {
-      allList.push(item)
-    }
-    for (let item in aList) {
-      aList[item].emit('playerChange', allList)
-    }
-  }
 })
+
